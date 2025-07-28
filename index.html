@@ -2,171 +2,193 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>DNA 염기 서열 추론 - 컴퓨팅 사고 기반 활동</title>
+  <title>음운의 변동</title>
   <style>
-    body { font-family: 'Arial', sans-serif'; background: #f4f4f4; padding: 20px; }
-    h1 { color: #333; }
-    .tab { display: none; padding: 20px; background: #fff; border: 1px solid #ccc; border-top: none; }
-    .tab-buttons button {
-      padding: 10px 20px; margin-right: 10px;
-      border: 1px solid #ccc; background: #eee; cursor: pointer;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
     }
-    .tab-buttons button.active { background: #fff; border-bottom: none; font-weight: bold; }
-    .seq { font-family: monospace; font-size: 18px; }
-    .base-input { width: 25px; text-align: center; }
-    input[type="text"] { padding: 5px; font-size: 16px; }
-    #result, #abstraction-result, #decomposition-result { margin-top: 15px; }
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .subtitle {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+    .box {
+      border: 2px solid #000;
+      padding: 15px;
+      margin-top: 20px;
+      background-color: #f5f5f5;
+    }
+    .question, .timer {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: darkblue;
+    }
+    .hidden {
+      display: none;
+    }
+    #popup {
+      position: fixed;
+      top: 30%;
+      left: 30%;
+      width: 300px;
+      background: white;
+      border: 2px solid black;
+      padding: 20px;
+      text-align: center;
+      display: none;
+      z-index: 100;
+    }
+    #overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      z-index: 99;
+    }
   </style>
 </head>
 <body>
 
-<h1>DNA 염기 서열 추론하기 - 컴퓨팅 사고 기반</h1>
-<div class="tab-buttons">
-  <button onclick="showTab('decomposition')" id="btn-decomposition">문제 분해</button>
-  <button onclick="showTab('abstraction')" id="btn-abstraction">추상화</button>
-  <button onclick="showTab('pattern')" id="btn-pattern">패턴 및 규칙 찾기</button>
-</div>
+  <div class="title">타이틀: 음운의 변동</div>
+  <div class="subtitle">대상 및 교과: 고등학교 1학년</div>
 
-<!-- 문제 분해 -->
-<div class="tab" id="decomposition">
-  <h2>🧩 문제 분해</h2>
-  <p>문제 조건을 입력하여 나만의 문제를 만들어 봅니다.</p>
-  <label>염기 서열 길이: <input type="number" id="decomp-length" min="4" max="20" value="8"></label>
-  <br><br>
-  <button onclick="generateDecomposition()">문제 생성</button>
-  <div id="decomposition-result"></div>
-</div>
+  <div class="box">
+    문제: 음운의 변동의 종류에는 ‘교체, 탈락, 축약, 첨가’가 있다. 예시를 보고 흐름도에 따라 판단해보세요.
+  </div>
 
-<!-- 추상화 -->
-<div class="tab" id="abstraction">
-  <h2>🧊 추상화</h2>
-  <p>다음 염기서열에서 핵심 규칙만을 남기고 불필요한 정보를 제거해 보세요.</p>
-  <p><strong>문제:</strong> 다음 서열 중 G-C 규칙을 따르지 않는 쌍을 찾아보세요.</p>
-  <div class="seq" id="abstraction-question"></div>
-  <br>
-  <label>틀린 위치 번호 입력 (0부터 시작, 쉼표로 구분):<br>
-    <input type="text" id="abstraction-answer" placeholder="예: 2,5,7">
-  </label>
-  <br><br>
-  <button onclick="checkAbstraction()">정답 제출</button>
-  <div id="abstraction-result"></div>
-</div>
+  <div class="box">
+    시간 설정:
+    <select id="timeSelect">
+      <option value="30">30초</option>
+      <option value="60">1분</option>
+      <option value="90">1분 30초</option>
+      <option value="120">2분</option>
+    </select>
+    <button onclick="startQuiz()">문제 풀이 시작</button>
+  </div>
 
-<!-- 패턴 -->
-<div class="tab" id="pattern">
-  <h2>🔁 패턴 및 규칙 찾기</h2>
-  <p>가려진 부분의 염기를 추론해 보세요. A↔T, G↔C 규칙을 사용하세요.</p>
-  <div class="seq" id="pattern-top"></div>
-  <div class="seq" id="pattern-bottom"></div>
-  <br>
-  <button onclick="submitPattern()">정답 제출</button>
-  <div id="result"></div>
-</div>
+  <div class="box hidden" id="quizBox">
+    <div><strong>예시 단어:</strong> <span id="exampleWord"></span></div>
+    <div class="timer">남은 시간: <span id="timer">00:00</span></div>
 
-<script>
-  let currentTop = '';
-  let maskedIndices = [];
+    <div class="question" id="q1">음운의 개수에 변동이 있습니까?</div>
+    <button onclick="answer('no')">아니오</button>
+    <button onclick="answer('yes1')">예</button>
 
-  const basePair = { 'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G' };
+    <div class="question hidden" id="q2">음운의 개수가 감소하였습니까?</div>
+    <button onclick="answer('no2')" id="btn2-1" class="hidden">아니오</button>
+    <button onclick="answer('yes2')" id="btn2-2" class="hidden">예</button>
 
-  function showTab(id) {
-    document.querySelectorAll('.tab').forEach(tab => tab.style.display = 'none');
-    document.querySelectorAll('.tab-buttons button').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(id).style.display = 'block';
-    document.getElementById('btn-' + id).classList.add('active');
+    <div class="question hidden" id="q3">제3의 음운으로 바뀌었습니까?</div>
+    <button onclick="answer('no3')" id="btn3-1" class="hidden">아니오</button>
+    <button onclick="answer('yes3')" id="btn3-2" class="hidden">예</button>
 
-    if (id === 'abstraction') generateAbstraction();
-    if (id === 'pattern') startPattern();
-  }
+    <div class="result" id="result"></div>
+  </div>
 
-  // 문제 분해
-  function generateDecomposition() {
-    const len = parseInt(document.getElementById('decomp-length').value);
-    const seq = Array.from({ length: len }, () => randomBase()).join('');
-    document.getElementById('decomposition-result').innerHTML = `
-      <p><strong>생성된 문제:</strong> DNA 서열: ${seq}</p>
-      <p>이 서열의 상보적 가닥을 구하고, 규칙을 설명해보세요.</p>
-    `;
-  }
+  <!-- 팝업 -->
+  <div id="overlay"></div>
+  <div id="popup">
+    <p>시간이 종료되었습니다!</p>
+    <button onclick="retryQuiz()">다시 도전</button>
+  </div>
 
-  // 추상화
-  function generateAbstraction() {
-    const bases = ['G', 'C'];
-    let top = '';
-    let bottom = '';
-    for (let i = 0; i < 10; i++) {
-      const b = bases[Math.floor(Math.random() * bases.length)];
-      top += b;
-      bottom += Math.random() < 0.7 ? basePair[b] : randomBase();  // 일부 오류 삽입
+  <script>
+    const examples = [
+      { word: "국수 → [국쑤]", answer: "no" },     // 교체
+      { word: "낳은 → [나은]", answer: "yes2" },    // 탈락
+      { word: "국화 → [구콰]", answer: "yes3" },    // 축약
+      { word: "담요 → [담뇨]", answer: "no3" }      // 첨가
+    ];
+
+    let timer, countdown, currentAnswer;
+
+    function startQuiz() {
+      document.getElementById("quizBox").classList.remove("hidden");
+      document.getElementById("result").innerText = "";
+
+      // 랜덤 예시 선택
+      const random = examples[Math.floor(Math.random() * examples.length)];
+      document.getElementById("exampleWord").innerText = random.word;
+      currentAnswer = random.answer;
+
+      // 모든 질문 숨기기 초기화
+      hideAllQuestions();
+      document.getElementById("q1").style.display = "block";
+
+      // 타이머 시작
+      let selectedTime = parseInt(document.getElementById("timeSelect").value);
+      startTimer(selectedTime);
     }
-    document.getElementById('abstraction-question').textContent = `Top: ${top} / Bottom: ${bottom}`;
-    document.getElementById('abstraction-answer').value = '';
-    document.getElementById('abstraction-result').innerHTML = '';
-    document.getElementById('abstraction-question').dataset.top = top;
-    document.getElementById('abstraction-question').dataset.bottom = bottom;
-  }
 
-  function checkAbstraction() {
-    const top = document.getElementById('abstraction-question').dataset.top;
-    const bottom = document.getElementById('abstraction-question').dataset.bottom;
-    let wrong = [];
-    for (let i = 0; i < top.length; i++) {
-      if (basePair[top[i]] !== bottom[i]) wrong.push(i);
+    function hideAllQuestions() {
+      ["q2", "q3", "btn2-1", "btn2-2", "btn3-1", "btn3-2"].forEach(id => {
+        document.getElementById(id).classList.add("hidden");
+      });
     }
-    const userInput = document.getElementById('abstraction-answer').value.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-    const correctCount = userInput.filter(x => wrong.includes(x)).length;
-    const result = `총 ${wrong.length}개의 오류 중 ${correctCount}개를 정확히 찾았습니다.`;
-    document.getElementById('abstraction-result').innerHTML = result;
-  }
 
-  // 패턴
-  function startPattern() {
-    const length = 10;
-    currentTop = '';
-    maskedIndices = [];
-    let topHTML = '';
-    let bottomHTML = '';
-    for (let i = 0; i < length; i++) {
-      const base = randomBase();
-      currentTop += base;
-      const isMasked = Math.random() < 0.3;
-      if (isMasked) {
-        topHTML += `<input type="text" maxlength="1" class="base-input" data-index="${i}" />`;
-        maskedIndices.push(i);
+    function answer(choice) {
+      if (choice === currentAnswer) {
+        document.getElementById("result").innerText = "정답입니다!";
+        clearInterval(countdown);
       } else {
-        topHTML += `<span>${base}</span>`;
+        if (choice === "yes1") {
+          document.getElementById("q2").classList.remove("hidden");
+          document.getElementById("btn2-1").classList.remove("hidden");
+          document.getElementById("btn2-2").classList.remove("hidden");
+        } else if (choice === "no2") {
+          document.getElementById("q3").classList.remove("hidden");
+          document.getElementById("btn3-1").classList.remove("hidden");
+          document.getElementById("btn3-2").classList.remove("hidden");
+        } else if (choice.startsWith("yes") || choice.startsWith("no")) {
+          document.getElementById("result").innerText = "틀렸습니다. 다시 시도해보세요!";
+        }
       }
-      bottomHTML += `<span>${basePair[base]}</span>`;
     }
-    document.getElementById('pattern-top').innerHTML = `5′– ${topHTML} –3′`;
-    document.getElementById('pattern-bottom').innerHTML = `3′– ${bottomHTML} –5′`;
-    document.getElementById('result').innerHTML = '';
-  }
 
-  function submitPattern() {
-    let correct = 0;
-    maskedIndices.forEach(i => {
-      const input = document.querySelector(`input[data-index="${i}"]`);
-      const expected = currentTop[i];
-      const entered = input.value.toUpperCase();
-      if (entered === expected) {
-        input.style.border = '2px solid green';
-        correct++;
-      } else {
-        input.style.border = '2px solid red';
-      }
-    });
-    document.getElementById('result').innerHTML = `정답: ${correct} / ${maskedIndices.length} 개 맞춤`;
-  }
+    function startTimer(duration) {
+      let timeLeft = duration;
+      updateTimerDisplay(timeLeft);
+      countdown = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay(timeLeft);
+        if (timeLeft <= 0) {
+          clearInterval(countdown);
+          showPopup();
+        }
+      }, 1000);
+    }
 
-  function randomBase() {
-    const b = ['A', 'T', 'G', 'C'];
-    return b[Math.floor(Math.random() * b.length)];
-  }
+    function updateTimerDisplay(seconds) {
+      const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const s = String(seconds % 60).padStart(2, '0');
+      document.getElementById("timer").innerText = `${m}:${s}`;
+    }
 
-  // 기본 탭 열기
-  showTab('decomposition');
-</script>
+    function showPopup() {
+      document.getElementById("overlay").style.display = "block";
+      document.getElementById("popup").style.display = "block";
+    }
+
+    function hidePopup() {
+      document.getElementById("overlay").style.display = "none";
+      document.getElementById("popup").style.display = "none";
+    }
+
+    function retryQuiz() {
+      hidePopup();
+      startQuiz();
+    }
+  </script>
 
 </body>
 </html>

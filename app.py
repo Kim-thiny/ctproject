@@ -3,21 +3,19 @@ import streamlit.components.v1 as htmlviewer
 
 # Title Msg#1
 st.title('This is Sky Webapp!!')
-
 with open('./index.html', 'r', encoding='utf-8') as f:
     html = f.read()
     f.close()
 
 # html = '''
 # <html>
-#     <head>
-#         <title> this is my html </title>
-#     </head>
-
-#     <body>
-#         <h1>Topic</h1>
-#         <h2>SubTopic</h2>
-#     </body>
+#    <head>
+#        <title> this is my html </title>
+#    </head>
+#    <body>
+#        <h1>Topic</h1>
+#        <h2>SubTopic</h2>
+#   </body>
 # </html>
 # '''
 
@@ -28,18 +26,15 @@ with col1:
         url = 'https://www.youtube.com/watch?v=XyEOEBsa8I4'
         st.info('Content..')
         st.video(url)
-
     with st.expander('Content #2...'):
-        #st.write(html, unsafe_allow_html=True)
-        htmlviewer.html(html, height=600)
-
+        st.write(html, unsafe_allow_html=True)
+        htmlviewer.html(html)
     with st.expander('Content #3...'):
-        #st.write(html, unsafe_allow_html=True)
-        htmlviewer.html(html, height=600)
+        st.write(html, unsafe_allow_html=True)
+        htmlviewer.html(html)
 
 with col2:
     with st.expander('Tips..'):
         st.info('Tips..')
-
 st.markdown('<hr>', unsafe_allow_html=True)
-st.write('<font color="BLUE">(c)copyright. all rights reserved by skykang', unsafe_allow_html=True) 
+st.write('<font color="BLUE">(c)copyright. all rights reserved by skykang', unsafe_allow_html=True)
