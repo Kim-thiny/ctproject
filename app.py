@@ -34,7 +34,7 @@ with col1:
         st.write(html, unsafe_allow_html=True)
         htmlviewer.html(html)
     with st.expander('Image content...'):
-        imgfilepath = './image/gpt.png'
+        imgfilepath = 'gpt.png'
         st.image(imgfilepath)
 
 with col2:
