@@ -23,18 +23,17 @@ with open('./index.html', 'r', encoding='utf-8') as f:
 # Box#1(4), Box#2(1)
 col1, col2 = st.columns((4,1))
 with col1:
-    with st.expander('참고 동영상'):
+    with st.expander('#1. 참고 동영상'):
         url = 'https://www.youtube.com/watch?v=XyEOEBsa8I4'
         st.info('Content..')
         st.video(url)
-    with st.expander('음운의 변동 종류 4가지'):
+    with st.expander('#2. 음운의 변동 종류'):
         st.info('교체, 탈락, 첨가, 축약')
         imgfilepath = 'language.jpg'
         st.image(imgfilepath)
-    with st.expander('음운의 변동 문제'):
+    with st.expander('#3. 음운의 변동 문제'):
         st.write(html, unsafe_allow_html=True)
-        htmlviewer.html(html)
-    with st.expander('정리해봅시다'):
+    with st.expander('#4. 정리해봅시다'):
         imgfilepath = 'flowchart.jpg'
         st.image(imgfilepath)
 
