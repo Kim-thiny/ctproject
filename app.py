@@ -1,9 +1,9 @@
 import streamlit as st
 import streamlit.components.v1 as htmlviewer
-st.set_page_config(layout='wide', page_title='DNA sequencying!!!')
+st.set_page_config(layout='wide', page_title='음운 변동의 규칙 알기!!!')
 
 # Title Msg#1
-st.title('This is Sky Webapp!!')
+st.title('음운의 변동 종류알기!!')
 with open('./index.html', 'r', encoding='utf-8') as f:
     html = f.read()
     f.close()
@@ -33,6 +33,9 @@ with col1:
     with st.expander('Content #3...'):
         st.write(html, unsafe_allow_html=True)
         htmlviewer.html(html)
+    with st.expander('Image content...'):
+        imgfilepath = './image/gpt.png'
+        st.image(imgfilepath)
 
 with col2:
     with st.expander('Tips..'):
